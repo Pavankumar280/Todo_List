@@ -1,4 +1,4 @@
-# Kadak Task Manager
+Task Manager
 
 A sleek and responsive MERN stack application to create, track, and manage tasks effortlessly with real-time updates.
 
