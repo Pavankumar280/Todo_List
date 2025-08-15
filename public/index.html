@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Task Manager</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+    :root {
+        --bg: #0f172a;
+        --card-bg: rgba(255,255,255,0.08);
+        --text: #f8fafc;
+        --accent: #38bdf8;
+        --accent-hover: #0ea5e9;
+        --danger: #ef4444;
+        --danger-hover: #dc2626;
+    }
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        display: flex;
+        justify-content: center;
+        padding: 20px;
+    }
+    .container {
+        max-width: 800px;
+        width: 100%;
+    }
+    h1 {
+        text-align: center;
+        margin-bottom: 20px;
+        font-size: 2.2rem;
+    }
+    .form-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    .form-group {
+        position: relative;
+        margin-bottom: 15px;
+    }
+    .form-group input, 
+    .form-group textarea {
+        width: 100%;
+        background: transparent;
+        border: 1px solid #475569;
+        border-radius: 8px;
+        color: var(--text);
+        font-size: 1rem;
+        outline: none;
+        padding: 12px;
+        box-sizing: border-box;
+    }
+    .form-group input {
+        height: 45px;
+    }
+    .form-group textarea {
+        min-height: 100px;
+        resize: vertical;
+        overflow-y: auto;
+        max-height: 200px;
+    }
+    .form-group label {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+        font-size: 1rem;
+        color: #94a3b8;
+        pointer-events: none;
+        transition: 0.2s;
+        background: var(--bg);
+        padding: 0 4px;
+    }
+    .form-group input:focus + label,
+    .form-group input:not(:placeholder-shown) + label,
+    .form-group textarea:focus + label,
+    .form-group textarea:not(:placeholder-shown) + label {
+        top: -8px;
+        left: 8px;
+        font-size: 0.8rem;
+        color: var(--accent);
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        background: var(--accent);
+        color: white;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    button:hover {
+        background: var(--accent-hover);
+    }
+    .todo-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 15px;
+    }
+    .todo {
+        background: var(--card-bg);
+        backdrop-filter: blur(8px);
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        animation: fadeIn 0.3s ease-in-out;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .todo h3 {
+        margin: 0;
+        font-size: 1.2rem;
+    }
+    .todo p {
+        font-size: 0.9rem;
+        color: #cbd5e1;
+        max-height: 80px;
+        overflow-y: auto;
+        margin-top: 5px;
+    }
+    .todo-actions {
+        margin-top: 10px;
+        display: flex;
+        gap: 10px;
+    }
+    .btn-icon {
+        flex: 1;
+        padding: 8px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        color: white;
+        font-size: 0.9rem;
+    }
+    .btn-edit {
+        background: var(--accent);
+    }
+    .btn-edit:hover {
+        background: var(--accent-hover);
+    }
+    .btn-delete {
+        background: var(--danger);
+    }
+    .btn-delete:hover {
+        background: var(--danger-hover);
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: scale(0.9); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    @media (max-width: 600px) {
+        .container {
+            padding: 0 10px;
+        }
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1> Task Manager</h1>
+    <div class="form-card">
+        <form id="todoForm">
+            <div class="form-group">
+                <input type="text" id="title" placeholder=" " required />
+                <label for="title">Title</label>
+            </div>
+            <div class="form-group">
+                <textarea id="description" placeholder=" " required></textarea>
+                <label for="description">Description</label>
+            </div>
+            <button type="submit">Add Todo</button>
+        </form>
+    </div>
+    <div class="todo-list" id="todoList"></div>
+</div>
+
+<script>
+const API_URL = "/api/v1";
+
+document.getElementById('todoForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const title = document.getElementById('title').value;
+    const description = document.getElementById('description').value;
+
+    await fetch(`${API_URL}/createTodo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, description })
+    });
+
+    e.target.reset();
+    loadTodos();
+});
+
+async function loadTodos() {
+    const res = await fetch(`${API_URL}/getTodo`);
+    const data = await res.json();
+
+    const todoList = document.getElementById('todoList');
+    todoList.innerHTML = "";
+
+    data.data.forEach(todo => {
+        const div = document.createElement('div');
+        div.className = "todo";
+        div.innerHTML = `
+            <h3>${todo.title}</h3>
+            <p>${todo.description}</p>
+            <div class="todo-actions">
+                <button class="btn-icon btn-edit" onclick="updateTodo('${todo._id}')"><i class="fa-solid fa-pen"></i> Edit</button>
+                <button class="btn-icon btn-delete" onclick="deleteTodo('${todo._id}')"><i class="fa-solid fa-trash"></i> Delete</button>
+            </div>
+        `;
+        todoList.appendChild(div);
+    });
+}
+
+async function deleteTodo(id) {
+    await fetch(`${API_URL}/deleteTodo/${id}`, { method: "DELETE" });
+    loadTodos();
+}
+
+async function updateTodo(id) {
+    const newTitle = prompt("Enter new title:");
+    const newDescription = prompt("Enter new description:");
+    if (!newTitle || !newDescription) return;
+
+    await fetch(`${API_URL}/updateTodo/${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: newTitle, description: newDescription })
+    });
+    loadTodos();
+}
+
+loadTodos();
+</script>
+</body>
+</html>
