@@ -85,7 +85,7 @@ DELETE	/todos/:id	Delete a Todo by ID	-
 }
 
 ✅ Example JSON Response
-```{
+``{
   "success": true,
   "data": {
     "_id": "64f8f0d5b8c0e5a1c1234567",
@@ -95,7 +95,7 @@ DELETE	/todos/:id	Delete a Todo by ID	-
     "updatedAt": "2025-09-04T05:00:00.000Z"
   },
   "message": "Entry Created Successfully"
-}```
+}``
 
 🗄️ Database Schema
 Todo Schema
@@ -115,6 +115,7 @@ The server will automatically connect to MongoDB at startup.
 🤝 License
 
 This project is licensed under the MIT License.
+
 
 
 
