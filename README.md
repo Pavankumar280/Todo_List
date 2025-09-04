@@ -1,4 +1,4 @@
-# Mission_Mate
+# todo
 
 A sleek and responsive MERN stack application to create, track, and manage tasks effortlessly with real-time updates.
 
@@ -47,3 +47,4 @@ Pull requests are welcome. For major changes, please open an issue first to disc
 
 ## 📜 License
 This project is licensed under the MIT License.
+
